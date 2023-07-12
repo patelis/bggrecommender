@@ -5,10 +5,14 @@ import numpy as np
 import polars as pl
 import requests
 from lxml import etree
+from pathlib import Path
 from funcs import retrieve_game_info, parse_bgg_xml
 
-games=pl.read_csv("bggrecommender/shiny_app/data/bgg_gamelist_all_details.csv").filter(pl.col("id") != 170984)
-embeddings = np.load("bggrecommender/data/embeddings.npz")["embeddings"]
+app_directory = Path(__file__).parent
+data_directory = app_directory/"data"
+
+games=pl.read_csv(data_directory/"bgg_gamelist_all_details.csv").filter(pl.col("id") != 170984)
+embeddings = np.load(data_directory/"embeddings.npz")["embeddings"]
 embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
 games = games.with_columns(name_date = pl.col("name") + " (" + pl.col("year_published").cast(pl.Utf8) + ")")
 names_list = games.select("name_date").to_series().to_list()
