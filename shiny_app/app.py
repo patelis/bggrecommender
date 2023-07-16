@@ -12,7 +12,7 @@ import shinyswatch
 app_directory = Path(__file__).parent
 data_directory = app_directory/"data"
 
-games=pl.read_csv(data_directory/"bgg_gamelist_all_details.csv").filter(pl.col("id") != 170984)
+games=pl.read_csv(data_directory/"bgg_gamelist_cleaned.csv")#.filter(pl.col("id") != 170984)
 embeddings = np.load(data_directory/"embeddings.npz")["embeddings"]
 #embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
 games = games.with_columns(name_date = pl.col("name") + " (" + pl.col("year_published").cast(pl.Utf8) + ")")
@@ -22,13 +22,27 @@ ids = games.select("id").to_series().to_numpy()
 
 app_ui = x.ui.page_fillable(
     shinyswatch.theme.quartz(),
-    #ui.tags.style(
-    #    """
-    #    selectize-input items not-full {
-    #        background: rgba(0,0,0,0.15)
-    #        }
-    #    """
-    #),
+    ui.tags.style(
+        """
+        .selectize-input, 
+        .selectize-control.single .selectize-input.input-active {
+            background: rgba(255,255,255,0.2);
+            cursor: text;
+            display: inline-block;
+        }
+        .selectize-input.full {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .selectize-dropdown .active {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .selectize-dropdown,
+        .selectize-input,
+        .selectize-input input {
+            color: #e9e9e8;
+        }
+        """
+    ),
     ui.row(ui.h1("Board Game Recommender", class_ = "text-center")),
     ui.row(x.ui.card(ui.markdown(
         """
@@ -45,15 +59,45 @@ app_ui = x.ui.page_fillable(
         #ui.column(6, ui.input_selectize("game_dropdown", None, choices=[], selected=[],multiple=False, width="100%")),
         ui.column(8, ui.output_ui("game_selector")),
         ui.column(2, ui.input_action_button("run_model", "Search", class_= "btn-sm btn-light", width = "100%")),
-        ui.column(2, ui.input_radio_buttons("model_select", label=None, choices={"knn":"k-NN", "svm":"SVM"}, selected="knn", width="100%", inline=True))
+        ui.column(1, ui.input_radio_buttons("model_select", label=None, choices={"knn":"k-NN", "svm":"SVM"}, selected="knn", width="100%", inline=True)), 
+        ui.column(1, 
+                  ui.div({"class":"btn-group", "role":"group"}, 
+                         ui.input_action_button("go_left", "Previous", class_= "btn-sm btn-light"), 
+                         ui.input_action_button("go_right", "Next", class_= "btn-sm btn-light")
+                         )
+                  )
         ), 
-    ui.input_text("test_outputs", "List games...", width= "100%"),
+    #ui.input_text("test_outputs", "Index", width= "100%"),
+    #ui.output_text("test_index"),
     x.ui.output_ui("cards", fill=True, fillable=True),
 
 )
 
 def server(input: Inputs, output: Outputs, session: Session):
-      
+    
+    index = reactive.Value([0])
+    
+    @reactive.Effect
+    @reactive.event(input.run_model)
+    @reactive.event(input.game_dropdown)
+    def _():
+        index.set([0])
+
+    @reactive.Effect
+    @reactive.event(input.go_right)
+    def _():
+        i = index().copy()[0]
+        index.set([i + 5])
+        
+    @reactive.Effect
+    @reactive.event(input.go_left)
+    def _():
+        if (index()[0] < 5):
+            index.set([0])
+        else:
+            i = index().copy()[0]
+            index.set([i - 5])
+    
     @reactive.Effect
     def _():
         ui.update_selectize(
@@ -83,9 +127,10 @@ def server(input: Inputs, output: Outputs, session: Session):
         else:
             select_menu = ui.input_selectize("game_dropdown", None, choices=[], selected=[],multiple=True, width="100%")
             
-        select_menu = ui.div({"class":"text-secondary"}, select_menu)
+        select_menu = ui.div({"class":"text-light"}, select_menu)
         
         return select_menu
+      
                 
     @reactive.Calc
     def model():
@@ -110,7 +155,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             
             sorted_ids = ids[sorted_ix][1:]
             
-            return sorted_ids[:5].tolist()
+            return sorted_ids.tolist()
             
         
         else:
@@ -134,30 +179,45 @@ def server(input: Inputs, output: Outputs, session: Session):
             
             sorted_ids = ids[sorted_ix][len(name):]
             
-            return sorted_ids[:5].tolist()
+            return sorted_ids.tolist()
             
     
-    @reactive.Effect
-    @reactive.event(input.run_model)
-    def _():
-        
-        #req(input.game_dropdown)
-        #req(input.run_model)
-        
-        id_list = model()
-        ids = ", ".join([str(id) for id in id_list])
-        
-        ui.update_text(
-            "test_outputs",
-            value = "Ids: " + ids
-        )
+    #@reactive.Effect
+    #@reactive.event(index)
+    #@reactive.event(input.run_model)
+    #def _():
+    #    
+    #    #req(input.game_dropdown)
+    #    #req(input.run_model)
+    #    
+    #    ids_all=model()
+    #    
+    #    i = index().copy()[0]
+    #    
+    #    id_list = ids_all[i:(i+5)]
+    #    ids = ", ".join([str(id) for id in id_list])
+    #    
+    #    ui.update_text(
+    #        "test_outputs",
+    #        value = "Ids: " + ids
+    #    )
+    #
+    #@output
+    #@render.text
+    #def test_index():
+    #    return index()[0]
     
     @output
     @render.ui
+    @reactive.event(index)
     @reactive.event(input.run_model)
     def cards():
-        ids_to_search=model()
+        ids_all=model()
         card_list = []
+        
+        i = index().copy()[0]
+        
+        ids_to_search = ids_all[i:(i+5)]
         
         xml_data = retrieve_game_info(ids_to_search)
         game_info = parse_bgg_xml(xml_data)
@@ -177,7 +237,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             else:
                 playtime = f"{game['min_playtime']}-{game['max_playtime']}"
             
-            link_to_game = ui.tags.a({"href":f"https://boardgamegeek.com/boardgame/{game['id']}/", "target":"_blank"}, "Link to boardgame")
+            link_to_game = ui.tags.a({"href":f"https://boardgamegeek.com/boardgame/{game['id']}/", "target":"_blank"}, f"Link to {game['name']} on BGG")
             
             y = x.ui.card(
                 x.ui.card_header(game['name']),
@@ -186,25 +246,25 @@ def server(input: Inputs, output: Outputs, session: Session):
                     
                     ui.tags.ul({"class":"list-group list-group-flush"}, 
                                
-                               ui.tags.li({"class":"list-group-item bg-light"}, 
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
                                           ui.row(
                                                  ui.column(9, "Average Rating:"), 
                                                  ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{avg_rating}"))
                                                  )
                                           ), 
-                               ui.tags.li({"class":"list-group-item bg-light"}, 
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
                                           ui.row(
                                                 ui.column(9, "BGG Rating:"), 
                                                 ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{bgg_rating}"))
                                                 )
                                           ), 
-                               ui.tags.li({"class":"list-group-item bg-light"}, 
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
                                           ui.row(
                                                 ui.column(9, "Players:"), 
                                                 ui.column(3, ui.tags.span({"class":"badge bg-info"}, players))
                                                 )
                                           ),
-                               ui.tags.li({"class":"list-group-item bg-light"}, 
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
                                           ui.row(
                                                 ui.column(9, "Playtime (minutes):"), 
                                                 ui.column(3, ui.tags.span({"class":"badge bg-info"}, playtime))
