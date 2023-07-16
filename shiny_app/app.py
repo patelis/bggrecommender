@@ -5,6 +5,7 @@ import polars as pl
 from pathlib import Path
 from funcs import retrieve_game_info, parse_bgg_xml
 import shinyswatch
+from sklearn import svm
 
 app_directory = Path(__file__).parent
 data_directory = app_directory/"data"
@@ -149,7 +150,6 @@ def server(input: Inputs, output: Outputs, session: Session):
         
         else:
             
-            from sklearn import svm
             x = embeddings
             y = np.zeros(x.shape[0])
             for i in name:
