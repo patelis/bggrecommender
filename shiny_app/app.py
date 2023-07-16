@@ -1,20 +1,16 @@
 from shiny import Inputs, Outputs, Session, App, reactive, render, req, ui
 import shiny.experimental as x
-from htmltools import css
 import numpy as np
 import polars as pl
-import requests
-from lxml import etree
 from pathlib import Path
-from funcs import request, retrieve_game_info, parse_bgg_xml
+from funcs import retrieve_game_info, parse_bgg_xml
 import shinyswatch
 
 app_directory = Path(__file__).parent
 data_directory = app_directory/"data"
 
-games=pl.read_csv(data_directory/"bgg_gamelist_cleaned.csv")#.filter(pl.col("id") != 170984)
+games=pl.read_csv(data_directory/"bgg_gamelist.csv")
 embeddings = np.load(data_directory/"embeddings.npz")["embeddings"]
-#embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
 games = games.with_columns(name_date = pl.col("name") + " (" + pl.col("year_published").cast(pl.Utf8) + ")")
 names_list = games.select("name_date").to_series().to_list()
 names = games.select("name_date").to_series().to_numpy()
@@ -136,7 +132,6 @@ def server(input: Inputs, output: Outputs, session: Session):
     def model():
         
         req(input.game_dropdown())
-        #req(input.run_model)
         type = input.model_select()
         name = input.game_dropdown()
         
@@ -146,12 +141,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             
             similarities = embeddings.dot(query)
             sorted_ix = np.argsort(-similarities)
-            #sorted_ix = sorted_ix[:5]
-            #sorted_names = names[sorted_ix][1:]
-            
-            #names_string = ", ".join(sorted_names[:5].tolist())
-            
-            #return names_string
             
             sorted_ids = ids[sorted_ix][1:]
             
@@ -171,11 +160,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             
             similarities = clf.decision_function(x)
             sorted_ix = np.argsort(-similarities)
-            #sorted_names = names[sorted_ix][len(name):]
-            
-            #names_string = ", ".join(sorted_names[:5].tolist())
-            
-            #return names_string
             
             sorted_ids = ids[sorted_ix][len(name):]
             
@@ -224,6 +208,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         
         for game in game_info:
             
+            game_name = f"{game['name']} ({game['year_published']})"
             avg_rating = round(float(game['avg_rating']), 2)
             bgg_rating = round(float(game['bgg_rating']), 2)
             
@@ -240,7 +225,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             link_to_game = ui.tags.a({"href":f"https://boardgamegeek.com/boardgame/{game['id']}/", "target":"_blank"}, f"Link to {game['name']} on BGG")
             
             y = x.ui.card(
-                x.ui.card_header(game['name']),
+                x.ui.card_header(game_name),
                 x.ui.card_image(file=None, src=game['image'], border_radius="all"), 
                 x.ui.card_body(
                     
