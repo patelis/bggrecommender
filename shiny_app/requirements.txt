@@ -1,0 +1,8 @@
+numpy==1.24.3
+polars==0.18.2
+shiny==0.4.0
+shinyswatch==0.2.4
+pathlib==1.0.1
+requests==2.31.0
+lxml==4.9.3
+scikit-learn==1.2.2
