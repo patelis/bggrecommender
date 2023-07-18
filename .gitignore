@@ -166,3 +166,4 @@ cython_debug/
 *lib64
 *lib
 *rsconnect-python
+*.vscode
