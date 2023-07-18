@@ -231,53 +231,50 @@ def server(input: Inputs, output: Outputs, session: Session):
             game_mechanics = f"Mechanics: {game['mechanics']}"
             
             y = x.ui.layout_sidebar(
-                x.ui.sidebar(
-                    game_description, 
-                    open="closed", 
-                ),
-                x.ui.card(
-                x.ui.card_header(game_name),
-                x.ui.card_image(file=None, src=game['image'], border_radius="all"), 
-                x.ui.card_body(
-                    
-                    ui.tags.ul({"class":"list-group list-group-flush"}, 
-                               
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
-                                          ui.row(
-                                                 ui.column(9, "Average Rating:"), 
-                                                 ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{avg_rating}"))
-                                                 )
+                    x.ui.sidebar(
+                        game_description, 
+                        open="closed", 
+                    ),
+                    x.ui.card(
+                        x.ui.card_header(game_name),
+                        x.ui.card_image(file=None, src=game['image'], border_radius="all"), 
+                        x.ui.card_body(
+                            ui.tags.ul({"class":"list-group list-group-flush"}, 
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, 
+                                            ui.row(
+                                                   ui.column(9, "Average Rating:"), 
+                                                   ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{avg_rating}"))
+                                                   )
                                           ), 
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
-                                          ui.row(
-                                                ui.column(9, "BGG Rating:"), 
-                                                ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{bgg_rating}"))
-                                                )
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, 
+                                            ui.row(
+                                                   ui.column(9, "BGG Rating:"), 
+                                                   ui.column(3, ui.tags.span({"class":"badge bg-info"}, f"{bgg_rating}"))
+                                                  )
                                           ), 
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
-                                          ui.row(
-                                                ui.column(9, "Players:"), 
-                                                ui.column(3, ui.tags.span({"class":"badge bg-info"}, players))
-                                                )
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, 
+                                            ui.row(
+                                                   ui.column(9, "Players:"), 
+                                                   ui.column(3, ui.tags.span({"class":"badge bg-info"}, players))
+                                                  )
                                           ),
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, 
-                                          ui.row(
-                                                ui.column(9, "Playtime (minutes):"), 
-                                                ui.column(3, ui.tags.span({"class":"badge bg-info"}, playtime))
-                                                )
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, 
+                                            ui.row(
+                                                   ui.column(9, "Playtime (minutes):"), 
+                                                   ui.column(3, ui.tags.span({"class":"badge bg-info"}, playtime))
+                                                  )
                                           ),
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, game_categories), 
-                               ui.tags.li({"class":"list-group-item bg-secondary"}, game_mechanics)
-                               )
-                    ), 
-                x.ui.card_footer({"class":"bg-primary"}, link_to_game)
-            ), 
-            padding = 0
-            )
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, game_categories), 
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, game_mechanics)
+                                )
+                            ), 
+                        x.ui.card_footer({"class":"bg-primary"}, link_to_game)
+                        ), 
+                    padding = 0
+                    )
         
             card_list.append(y)
             
         return x.ui.layout_column_wrap(1/5, *card_list),
-        #return x.ui.layout_column_wrap(1/5, y,y,y,y,y),
 
 app = App(app_ui, server)
