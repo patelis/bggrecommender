@@ -16,5 +16,5 @@ EXPOSE 8080
 
 CMD ["shiny", "run", "app.py", "--host", "0.0.0.0", "--port", "8080"]
 
-#docker build --tag shiny_app .
-#docker run -d -p 0.0.0.0:8080:8080 shiny_app
+#docker build --tag bggrecommender .
+#docker run -d -p 0.0.0.0:8080:8080 bggrecommender
