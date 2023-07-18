@@ -1,10 +1,6 @@
 FROM python:3.9-slim
 
-# Add user an change working directory and user
-#RUN addgroup --system app && adduser --system --ingroup app app
 WORKDIR /app
-#RUN chown app:app -R /home/app
-#USER app
 
 # Install requirements
 COPY requirements.txt requirements.txt
