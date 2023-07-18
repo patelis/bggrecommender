@@ -49,20 +49,20 @@ def parse_bgg_xml(xml_data):
         bgg_rating = item.xpath('.//statistics/ratings/bayesaverage/@value')[0] if bool(item.xpath('.//statistics/ratings/bayesaverage/@value')) else None
         #rank = item.xpath('.//statistics/ratings/ranks/rank[@type="subtype"]/@value')[0] if bool(item.xpath('.//statistics/ratings/ranks/rank[@type="subtype"]/@value')) else None
         
-        #categories = []
-        #mechanics = []
+        categories = []
+        mechanics = []
         #publishers = []
         #designers = []
         #artists = []
         #expansions = []
 
-        #for category in item.xpath('.//link[@type="boardgamecategory"]'):
-        #    categories.append(category.xpath('@value')[0])    
-        #categories = ", ".join(categories)
+        for category in item.xpath('.//link[@type="boardgamecategory"]'):
+            categories.append(category.xpath('@value')[0])    
+        categories = ", ".join(categories)
 
-        #for mechanic in item.xpath('.//link[@type="boardgamemechanic"]'):
-        #    mechanics.append(mechanic.xpath('@value')[0])
-        #mechanics = ", ".join(mechanics)
+        for mechanic in item.xpath('.//link[@type="boardgamemechanic"]'):
+            mechanics.append(mechanic.xpath('@value')[0])
+        mechanics = ", ".join(mechanics)
 
         #for publisher in item.xpath('.//link[@type="boardgamepublisher"]'):
         #    publishers.append(publisher.xpath('@value')[0])    
@@ -96,8 +96,8 @@ def parse_bgg_xml(xml_data):
             'bgg_rating':bgg_rating,
             'avg_rating':average_rating, 
             #'rank':rank, 
-            #'categories':categories,
-            #'mechanics':mechanics,
+            'categories':categories,
+            'mechanics':mechanics,
             #'designers':designers,
             #'artists':artists,
             #'publishers':publishers,
