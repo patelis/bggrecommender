@@ -3,9 +3,10 @@ import shiny.experimental as x
 import numpy as np
 import polars as pl
 from pathlib import Path
-from funcs import retrieve_game_info, parse_bgg_xml
+from html import unescape
 import shinyswatch
 from sklearn import svm
+from funcs import retrieve_game_info, parse_bgg_xml
 
 app_directory = Path(__file__).parent
 data_directory = app_directory/"data"
@@ -44,9 +45,9 @@ app_ui = x.ui.page_fillable(
     ui.row(x.ui.card(ui.markdown(
         """
         This app allows users to discover board games that are similar to other board games that 
-        are similar to other games the users have played before. Simply start typing the name of 
+        the users have played before. Simply start typing the name of 
         a game in the textbox below and select a game from the dropdown. Click search for an overview of 
-        the most similar games based on the selected game's description. When using an SVM model to find 
+        the most similar games based on the selected game's description. When using an __SVM__ model to find 
         similar games, users are able to specify more than one game and the model tries to find the games that 
         are most similar to all selections.
         """
@@ -222,9 +223,19 @@ def server(input: Inputs, output: Outputs, session: Session):
             else:
                 playtime = f"{game['min_playtime']}-{game['max_playtime']}"
             
+            game_description = unescape(game['description'])
+            
             link_to_game = ui.tags.a({"href":f"https://boardgamegeek.com/boardgame/{game['id']}/", "target":"_blank"}, f"Link to {game['name']} on BGG")
             
-            y = x.ui.card(
+            game_categories = f"Category: {game['categories']}"
+            game_mechanics = f"Mechanics: {game['mechanics']}"
+            
+            y = x.ui.layout_sidebar(
+                x.ui.sidebar(
+                    game_description, 
+                    open="closed", 
+                ),
+                x.ui.card(
                 x.ui.card_header(game_name),
                 x.ui.card_image(file=None, src=game['image'], border_radius="all"), 
                 x.ui.card_body(
@@ -254,11 +265,14 @@ def server(input: Inputs, output: Outputs, session: Session):
                                                 ui.column(9, "Playtime (minutes):"), 
                                                 ui.column(3, ui.tags.span({"class":"badge bg-info"}, playtime))
                                                 )
-                                          )
+                                          ),
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, game_categories), 
+                               ui.tags.li({"class":"list-group-item bg-secondary"}, game_mechanics)
                                )
                     ), 
-                x.ui.card_footer({"class":"bg-primary"}, link_to_game),
-                full_screen=True,          
+                x.ui.card_footer({"class":"bg-primary"}, link_to_game)
+            ), 
+            padding = 0
             )
         
             card_list.append(y)
