@@ -53,8 +53,6 @@ app_ui = x.ui.page_fillable(
         """
         ))),
     ui.row(
-        #ui.column(1, ui.h5("Find game similar to:", class_ = "text-center")),
-        #ui.column(6, ui.input_selectize("game_dropdown", None, choices=[], selected=[],multiple=False, width="100%")),
         ui.column(8, ui.output_ui("game_selector")),
         ui.column(2, ui.input_action_button("run_model", "Search", class_= "btn-sm btn-light", width = "100%")),
         ui.column(1, ui.input_radio_buttons("model_select", label=None, choices={"knn":"k-NN", "svm":"SVM"}, selected="knn", width="100%", inline=True)), 
@@ -65,8 +63,6 @@ app_ui = x.ui.page_fillable(
                          )
                   )
         ), 
-    #ui.input_text("test_outputs", "Index", width= "100%"),
-    #ui.output_text("test_index"),
     x.ui.output_ui("cards", fill=True, fillable=True),
 
 )
