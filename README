@@ -1,4 +1,4 @@
-## BGG Recommender App
+# BGG Recommender App
 
 This is a repository for a project to create a recommender for board games using data from the Board Game Geeks website.
 By providing one (or more based on the selected model) board game as reference, the recommender provides a selection of similar games.  
