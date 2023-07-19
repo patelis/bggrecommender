@@ -148,7 +148,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             
             return sorted_ids.tolist()
             
-        
         else:
             
             x = embeddings
@@ -165,32 +164,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             sorted_ids = ids[sorted_ix][len(name):]
             
             return sorted_ids.tolist()
-            
-    
-    #@reactive.Effect
-    #@reactive.event(index)
-    #@reactive.event(input.run_model)
-    #def _():
-    #    
-    #    #req(input.game_dropdown)
-    #    #req(input.run_model)
-    #    
-    #    ids_all=model()
-    #    
-    #    i = index().copy()[0]
-    #    
-    #    id_list = ids_all[i:(i+5)]
-    #    ids = ", ".join([str(id) for id in id_list])
-    #    
-    #    ui.update_text(
-    #        "test_outputs",
-    #        value = "Ids: " + ids
-    #    )
-    #
-    #@output
-    #@render.text
-    #def test_index():
-    #    return index()[0]
     
     @output
     @render.ui
@@ -265,8 +238,8 @@ def server(input: Inputs, output: Outputs, session: Session):
                                                   )
                                           ),
                                 ui.tags.li({"class":"list-group-item bg-secondary"}, game_categories), 
-                                ui.tags.li({"class":"list-group-item bg-secondary"}, game_mechanics)
-                                )
+                                ui.tags.li({"class":"list-group-item bg-secondary"}, game_mechanics),
+                                ), 
                             ), 
                         x.ui.card_footer({"class":"bg-primary"}, link_to_game)
                         ), 
