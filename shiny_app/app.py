@@ -6,7 +6,7 @@ from pathlib import Path
 from html import unescape
 import shinyswatch
 from sklearn import svm
-from funcs import retrieve_game_info, parse_bgg_xml
+from funcs import retrieve_game_info, parse_bgg_xml, fetch_similar_implementations
 
 app_directory = Path(__file__).parent
 data_directory = app_directory/"data"
@@ -52,6 +52,7 @@ app_ui = x.ui.page_fillable(
         are most similar to all selections.
         """
         ))),
+    ui.row(ui.input_checkbox("remove_implementations", "Remove similar implementations: ", False)),
     ui.row(
         ui.column(8, ui.output_ui("game_selector")),
         ui.column(2, ui.input_action_button("run_model", "Search", class_= "btn-sm btn-light", width = "100%")),
@@ -140,7 +141,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             similarities = embeddings.dot(query)
             sorted_ix = np.argsort(-similarities)
             
-            sorted_ids = ids[sorted_ix][1:]
+            sorted_ids = ids[sorted_ix]
             
             return sorted_ids.tolist()
             
@@ -157,21 +158,59 @@ def server(input: Inputs, output: Outputs, session: Session):
             similarities = clf.decision_function(x)
             sorted_ix = np.argsort(-similarities)
             
-            sorted_ids = ids[sorted_ix][len(name):]
+            sorted_ids = ids[sorted_ix]
             
             return sorted_ids.tolist()
+    
+    @reactive.Calc
+    def similar_implementation_ids():
+        
+        req(input.game_dropdown())
+        
+        type = input.model_select()
+        name = input.game_dropdown()
+        
+        if (type == "knn"):
+            
+            searched_ids = ids[names == name]
+            
+        else:
+            for i in name:
+                searched_ids.append(ids[names == i][0])
+                
+        if (input.remove_implementations() == True):
+            
+            xml_implementations = retrieve_game_info(searched_ids)
+            similar_games_ids = fetch_similar_implementations(xml_implementations)
+            
+            similar_games_ids = [int(x) for x in similar_games_ids]
+            
+            for game_id in searched_ids:
+                similar_games_ids.append(game_id)
+                
+        else:
+            similar_games_ids = searched_ids
+        
+        return set(similar_games_ids)
+        
+        
     
     @output
     @render.ui
     @reactive.event(index)
+    @reactive.event(input.remove_implementations)
     @reactive.event(input.run_model)
+    
     def cards():
         ids_all=model()
+        ids_similar_implementation = similar_implementation_ids()
         card_list = []
         
-        i = index().copy()[0]
+        ids_subset = [x for x in ids_all if x not in ids_similar_implementation]
         
-        ids_to_search = ids_all[i:(i+5)]
+        i = index().copy()[0]
+              
+        ids_to_search = ids_subset[i:(i+5)]
         
         xml_data = retrieve_game_info(ids_to_search)
         game_info = parse_bgg_xml(xml_data)
