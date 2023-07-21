@@ -107,3 +107,16 @@ def parse_bgg_xml(xml_data):
             })
         
     return game_info
+
+def fetch_similar_implementations(xml_data):
+    
+    root = etree.fromstring(xml_data)
+    
+    implementations = []
+    
+    for item in root.xpath('//item'):
+              
+        for implementation in item.xpath('.//link[@type="boardgameimplementation"]'):
+            implementations.append(implementation.xpath('@id')[0])
+            
+    return implementations
