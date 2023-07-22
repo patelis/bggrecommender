@@ -175,6 +175,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             searched_ids = ids[names == name]
             
         else:
+            searched_ids = []
             for i in name:
                 searched_ids.append(ids[names == i][0])
                 
